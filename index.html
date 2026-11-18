@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#100b10">
+<title>CRIPTO V.01</title>
+<style>
+:root{color-scheme:dark;--bg:#0d0a0e;--card:#19131b;--line:#49313d;--red:#d83b52;--text:#f8f0f3;--muted:#b9aab2}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#35121f 0,transparent 48%),var(--bg);color:var(--text);font:16px/1.5 system-ui,sans-serif}
+main{max-width:760px;margin:auto;padding:28px 16px 48px}header{text-align:center;padding:10px 0 22px}.kicker{font-size:.72rem;letter-spacing:.25em;color:#ff8797}
+h1{font:clamp(2.5rem,12vw,4.5rem) Georgia,serif;letter-spacing:.12em;margin:8px 0}header p{color:var(--muted);margin:0}
+.tabs{display:flex;gap:8px;margin:14px 0}button{font:inherit;cursor:pointer}.tab,.btn{border:1px solid var(--line);background:#241923;color:var(--text);border-radius:10px;padding:11px 15px}.tab{flex:1}.tab.active,.btn.primary{background:#7f1e32;border-color:var(--red)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:16px;margin-bottom:18px}label{display:block;font-weight:650;margin:0 0 8px}
+textarea{display:block;width:100%;min-height:135px;resize:vertical;border:1px solid #60404e;border-radius:10px;background:#0e0a0f;color:var(--text);padding:13px;font:16px/1.55 system-ui,sans-serif}
+textarea:focus{outline:2px solid #b93851;outline-offset:1px}textarea::placeholder{color:#857781}.actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.btn{padding:10px 14px}.note{font-size:.86rem;color:var(--muted);margin:12px 0 0}
+h2{font:1.5rem Georgia,serif;margin:25px 0 12px}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.cell{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;background:var(--card);border:1px solid var(--line);border-radius:9px}.cell b{color:var(--muted);font-size:.85rem}.cell span{font-size:1.45rem}
+footer{text-align:center;color:#887782;font-size:.78rem;margin-top:26px}@media(min-width:520px){.grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+</style></head><body><main>
+<header><div class="kicker">ALFABETO DE SUBSTITUIÇÃO</div><h1>⛧ CRIPTO ⛧</h1><p>Escreva. Codifique. Decifre.</p></header>
+<div class="tabs"><button class="tab active" id="encodeTab" type="button">Codificar</button><button class="tab" id="decodeTab" type="button">Decodificar</button></div>
+<section class="card">
+<label id="inputLabel" for="source">Texto original</label><textarea id="source" placeholder="Digite sua mensagem..."></textarea>
+<div class="actions"><button class="btn primary" id="convert" type="button">⛧ Codificar</button><button class="btn" id="clear" type="button">Limpar</button></div>
+<label for="output">Resultado</label><textarea id="output" readonly placeholder="O resultado aparece aqui..."></textarea>
+<div class="actions"><button class="btn" id="copy" type="button">Copiar resultado</button></div>
+<p class="note">Espaços, números e pontuação são preservados. Acentos usam a letra-base: Á = A, Ç = C.</p>
+</section>
+<h2>Chave do alfabeto</h2><div class="grid" id="alphabet"></div><footer>CRIPTO V.01 • Feito para suas mensagens secretas</footer>
+</main><script>
+(function(){
+'use strict';
+var pairs=[['A','₪'],['B','ʬ'],['C','ϟ'],['D','Ж'],['E','∂'],['F','Ѫ'],['G','҂'],['H','⌘'],['I','ɮ'],['J','⸸'],['K','ʭ'],['L','ζ'],['M','௵'],['N','Ѯ'],['O','⊗'],['P','ֆ'],['Q','ꙮ'],['R','ʯ'],['S','҉'],['T','⟁'],['U','ɀ'],['V','ⵙ'],['W','₪̸'],['X','҈'],['Y','ʘ'],['Z','⸙']];
+var forward={},backward={},i;for(i=0;i<pairs.length;i++){forward[pairs[i][0]]=pairs[i][1];backward[pairs[i][1]]=pairs[i][0];}
+var source=document.getElementById('source'),output=document.getElementById('output'),mode='encode';
+function baseChar(ch){return ch.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase();}
+function encode(str){return Array.from(str).map(function(ch){var b=baseChar(ch);return forward[b]||ch;}).join('');}
+function decode(str){var symbols=Object.keys(backward).sort(function(a,b){return b.length-a.length;}),out='',pos=0;while(pos<str.length){var match=null;for(var j=0;j<symbols.length;j++){if(str.slice(pos,pos+symbols[j].length)===symbols[j]){match=symbols[j];break;}}if(match){out+=backward[match];pos+=match.length;}else{out+=str[pos];pos++;}}return out;}
+function convert(){output.value=mode==='encode'?encode(source.value):decode(source.value);}
+function setMode(next){mode=next;document.getElementById('encodeTab').classList.toggle('active',mode==='encode');document.getElementById('decodeTab').classList.toggle('active',mode==='decode');document.getElementById('inputLabel').textContent=mode==='encode'?'Texto original':'Texto codificado';source.placeholder=mode==='encode'?'Digite sua mensagem...':'Cole os símbolos aqui...';document.getElementById('convert').textContent=mode==='encode'?'⛧ Codificar':'⛧ Decodificar';output.value='';}
+document.getElementById('encodeTab').addEventListener('click',function(){setMode('encode');});document.getElementById('decodeTab').addEventListener('click',function(){setMode('decode');});
+document.getElementById('convert').addEventListener('click',convert);document.getElementById('clear').addEventListener('click',function(){source.value='';output.value='';source.focus();});
+document.getElementById('copy').addEventListener('click',function(){if(!output.value)return;var btn=this;function fallback(){output.focus();output.select();try{document.execCommand('copy');btn.textContent='Copiado!';}catch(e){btn.textContent='Selecione e copie';}setTimeout(function(){btn.textContent='Copiar resultado';},1600);}if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(output.value).then(function(){btn.textContent='Copiado!';setTimeout(function(){btn.textContent='Copiar resultado';},1600);}).catch(fallback);}else{fallback();}});
+var grid=document.getElementById('alphabet');for(i=0;i<pairs.length;i++){var cell=document.createElement('div');cell.className='cell';var letter=document.createElement('b');letter.textContent=pairs[i][0];var symbol=document.createElement('span');symbol.textContent=pairs[i][1];cell.appendChild(letter);cell.appendChild(symbol);grid.appendChild(cell);}
+})();
+</script></body></html>
